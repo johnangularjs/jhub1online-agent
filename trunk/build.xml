@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="JHUB1OnlineAgent" basedir="." default="dev-jar">
+	<property name="build.dir" value="build" />
+	<property name="release.dir" value="release" />
+	<property name="release.server.dir" value="release-server" />
+	<property name="src.dir" value="src/main" />
+	<property name="test.dir" value="src/test" />
+	<property name="dist.dir" value="dist" />
+	<property name="project.libs" value="lib" />
+	<property name="outputDevJAR" value="${dist.dir}/JHUB1OnlineAgentDev.jar" />
+	<property name="outputReleaseJAR" value="${dist.dir}/JHUB1OnlineAgent.jar" />
+	<property name="outputReleaseServerJAR" value="${dist.dir}/JHUB1OnlineServer.jar" />
+	<path id="lib.path">
+		<fileset dir="${project.libs}">
+			<include name="**/*.jar" />
+		</fileset>
+	</path>
+	<path id="lib.path.release">
+		<fileset dir="${release.dir}/classes/lib">
+			<include name="**/*.jar" />
+		</fileset>
+	</path>
+	<property name="dep_cp" value="${toString:lib.path}" />
+	<target name="init" description="Creates temporary directories">
+		<mkdir dir="${build.dir}/classes" />
+		<mkdir dir="${dist.dir}" />
+	</target>
+	<target name="clean" depends="init" description="Removes temporary directories">
+		<delete dir="${build.dir}" />
+		<delete dir="bin" failonerror="false" />
+		<delete dir="${dist.dir}" failonerror="false" />
+	</target>
+	<target name="compile" depends="init">
+		<javac debug="true" deprecation="true" destdir="${build.dir}/classes" srcdir="${src.dir}" verbose="true" includeantruntime="false">
+			<classpath>
+				<path refid="lib.path" />
+			</classpath>
+		</javac>
+		<javac debug="true" deprecation="true" destdir="${build.dir}/classes" srcdir="${test.dir}" verbose="true" includeantruntime="false">
+			<classpath>
+				<path refid="lib.path" />
+			</classpath>
+		</javac>
+	</target>
+	<target name="test" depends="compile">
+	  <junit printsummary="true" showoutput="false" haltonfailure="true">
+	    <classpath>	
+		  <pathelement location="${test.dir}/resources" />
+	      <pathelement location="${build.dir}/classes" />
+	    	  <fileset dir="${project.libs}">
+	    	    <include name="**/*.jar"/>
+	    	  </fileset>
+	    </classpath>    
+	    <batchtest>
+	       <fileset dir="${test.dir}">
+	            <include name="**/*Test*" />
+	       </fileset>
+	    </batchtest>
+	    <formatter type="plain" usefile="false"/>
+	  </junit>
+	</target>
+	
+	<target name="dev-jar" depends="compile" description="Builds project's development jar">
+		<copy todir="${build.dir}/classes/lib">
+		   <fileset file="${project.libs}/*"/>
+		</copy>
+		<copy todir="${build.dir}/classes">
+		   <fileset file="src/main/resources/*"/>
+		</copy>
+		<echo message="Overriding logback settings to DEV" />
+		<copy todir="${build.dir}/classes" verbose="true" overwrite="true">
+		   <fileset file="src/main/resources-dev/*"/>
+		</copy>
+		<echo message="Providing local client customized settings" />
+		<copy todir="${dist.dir}" verbose="true" overwrite="true">
+		   <fileset file="src/main/resources-client/*"/>
+		</copy>
+	    <manifestclasspath property="manifest_cp" jarfile="${outputDevJAR}">
+	        <classpath refid="lib.path" />
+	    </manifestclasspath>
+        <jar destfile="${outputDevJAR}" basedir="${build.dir}/classes" >
+      	  <manifest>
+      	    <attribute name="Built-By" value="${user.name}"/>
+      	    <attribute name="Class-Path" value="${manifest_cp}"/>
+      	    <attribute name="Main-Class" value="org.jhub1.agent.run.Driver"/>
+      	  <!--     	  	
+      	    <section name="common">
+      	      <attribute name="Specification-Title" value="Example"/>
+      	      <attribute name="Specification-Version" value="${version}"/>
+      	      <attribute name="Specification-Vendor" value="Example Organization"/>
+      	      <attribute name="Implementation-Title" value="common"/>
+      	      <attribute name="Implementation-Version" value="${version} ${TODAY}"/> 
+      	      <attribute name="Implementation-Vendor" value="Example Corp."/>
+      	    </section>
+      	    <section name="common/class1.class">
+      	      <attribute name="Sealed" value="false"/>
+      	    </section>
+      	          	    -->
+      	  </manifest>
+		</jar>
+		<copy todir="../">
+		   <fileset file="${outputDevJAR}"/>
+		</copy>
+		
+	</target>
+	<target name="jar" depends="compile" description="Builds project's release jar">
+		<echo message="Preparing project release: ${outputReleaseJAR}" />
+		<copy todir="${release.dir}/classes/lib">
+		  	   <fileset file="${project.libs}/commons-beanutils-1.9.1.jar"/>
+		   	   <fileset file="${project.libs}/commons-cli-1.2.jar"/>
+			   <fileset file="${project.libs}/commons-collections-3.2.1.jar"/>
+			   <fileset file="${project.libs}/commons-configuration-1.10.jar"/>		
+			   <fileset file="${project.libs}/commons-lang-2.6.jar"/>
+			   <fileset file="${project.libs}/dom4j-2.0.0-ALPHA-2.jar"/>
+			   <fileset file="${project.libs}/jasypt-1.9.1.jar"/>
+			   <fileset file="${project.libs}/jasypt-1.9.1-lite.jar"/>
+			   <fileset file="${project.libs}/jcl-over-slf4j-1.7.6.jar"/>
+			   <fileset file="${project.libs}/logback-classic-1.1.1.jar"/>
+			   <fileset file="${project.libs}/logback-core-1.1.1.jar"/>
+			   <fileset file="${project.libs}/slf4j-api-1.7.6.jar"/>
+			   <fileset file="${project.libs}/smack-3.4.1-0cec571.jar"/>
+			   <fileset file="${project.libs}/joda-time-2.1.jar"/>
+		</copy>
+		<copy todir="${release.dir}/classes">
+		   <fileset file="src/main/resources/*"/>
+		</copy>
+		<copy todir="${release.dir}/classes/org">
+		   <fileset dir="build/classes/org" />
+		</copy>
+	    <manifestclasspath property="manifest_cp" jarfile="${outputReleaseJAR}">
+	        <classpath refid="lib.path.release" />
+	    </manifestclasspath>
+        <jar destfile="${outputReleaseJAR}" basedir="${release.dir}/classes" >
+      	  <manifest>
+      	    <attribute name="Built-By" value="${user.name}"/>
+      	    <attribute name="Class-Path" value="${manifest_cp}"/>
+      	    <attribute name="Main-Class" value="org.jhub1.agent.run.Driver"/>
+      	  </manifest>
+		</jar>
+		<copy todir="../">
+		   <fileset file="${outputReleaseJAR}"/>
+		</copy>
+	</target>
+	
+	<target name="server-lib" depends="compile" description="Builds project's release jar for server">
+		<echo message="Preparing project server release: ${outputReleaseServerJAR}" />
+		<copy todir="${release.server.dir}/classes/org">
+		   <fileset dir="build/classes/org" />
+		</copy>
+		<jar destfile="${outputReleaseServerJAR}" basedir="${release.server.dir}/classes"  includes="org/jhub1/agent/*.class,org/jhub1/agent/randoms/**" >
+      	  <manifest>
+      	    <attribute name="Built-By" value="${user.name}"/>
+      	  </manifest>
+		</jar>
+		<copy todir="../">
+		   <fileset file="${outputReleaseServerJAR}"/>
+		</copy>
+	</target>
+</project>
+	
