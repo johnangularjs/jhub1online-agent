@@ -1,0 +1,8 @@
+/**
+ * 
+ */
+/**
+ * @author marek
+ *
+ */
+package resources;

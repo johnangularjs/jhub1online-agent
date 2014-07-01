@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<JHUB1Online>
+	<config>
+		<channels>
+			<default_output_channel>false</default_output_channel>
+			<input>
+				<file>true</file>
+				<udp>true</udp>
+			</input>
+			<inputconfig>
+				<udp>
+					<port>8822</port>
+				</udp>
+			</inputconfig>
+			<output>
+				<file>true</file>
+				<udp>true</udp>
+			</output>
+			<outputconfig>
+				<file>
+					<default>false</default>
+				</file>
+				<udp>
+					<default>false</default>
+					<port>8899</port>
+					<ip>127.0.0.1</ip>
+				</udp>
+			</outputconfig>
+		</channels>
+	</config>
+</JHUB1Online>
